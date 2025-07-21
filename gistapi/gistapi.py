@@ -39,6 +39,37 @@ def gists_for_user(username: str):
     response = requests.get(gists_url)
     return response.json()
 
+def gist_for_gist_id(gist_id: str):
+    """Provides the gist object for a given gist id.
+
+    This abstracts the /gists/:gist_id endpoint from the Github API.
+    See https://docs.github.com/en/rest/gists/gists?apiVersion=2022-11-28#get-a-gist for
+    more information
+
+    Args:
+        gist_id (string): the gist ID to query the specific gist for
+
+    Returns:
+        The dict parsed from the json response from the Github API.  See
+        the above URL for details of the expected structure.
+    """
+    gists_url = 'https://api.github.com/gists/{gist_id}'.format(gist_id=gist_id)
+    response = requests.get(gists_url)
+    return response.json()
+
+def get_content_from_url(content_url : str):
+    """Provides the gist content from the url
+
+    This makes an HTTP GET request to the given URL of a Gist file
+    and returns the content of the file as a string
+    Args:
+        content_url (string) : the url of the gist file content
+
+    Returns:
+        The text response from the gist content url
+    """
+    response = requests.get(content_url)
+    return response.text
 
 @app.route("/api/v1/search", methods=['POST'])
 def search():
@@ -58,16 +89,31 @@ def search():
     pattern = post_data['pattern']
 
     result = {}
+    matches = []
     gists = gists_for_user(username)
 
     for gist in gists:
         # TODO: Fetch each gist and check for the pattern
-        pass
+        gist_id = gist.get("id")
+        gist_info = gist_for_gist_id(gist_id)
+        for file_name, file_info in gist_info.get("files").items():
+            content = ""
+            match = {}
+            if file_info.get("truncated"):
+                content = get_content_from_url(file_info.get("raw_url"))
+            else:
+                content = file_info.get("content")
+
+            if pattern in content:
+                match['gist_id'] = gist_id
+                match['file_name'] = file_name
+                match['gist_content'] = content
+                matches.append(match)
 
     result['status'] = 'success'
     result['username'] = username
     result['pattern'] = pattern
-    result['matches'] = []
+    result['matches'] = matches
 
     return jsonify(result)
 
