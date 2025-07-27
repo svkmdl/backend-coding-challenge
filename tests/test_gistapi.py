@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import patch
-from gistapi.gistapi import gists_for_user
+from gistapi.gistapi import gists_for_user, gist_for_gist_id
 
 # Unit tests (used ref : https://medium.com/@moraneus/the-art-of-mocking-in-python-a-comprehensive-guide-8b619529458f)
 class TestUtils(unittest.TestCase):
@@ -14,5 +14,18 @@ class TestUtils(unittest.TestCase):
         actual_data = gists_for_user(username)
         self.assertEqual(actual_data, expected_data)
         mock_get.assert_called_once_with(expected_url)
+
+    @patch('gistapi.gistapi.requests.get')
+    def test_gist_for_gist_id(self, mock_get: patch) -> None :
+        mock_response = mock_get.return_value
+        expected_data = {"foo" : "bar"}
+        mock_response.json.return_value = expected_data
+        gist_id = '7d7218b569014139f74e27a75ffc5293'
+        expected_url = 'https://api.github.com/gists/7d7218b569014139f74e27a75ffc5293'
+        actual_data = gist_for_gist_id(gist_id)
+        self.assertEqual(actual_data, expected_data)
+        mock_get.assert_called_once_with(expected_url)
+
+
 if __name__ == '__main__':
     unittest.main()
