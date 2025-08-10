@@ -85,8 +85,15 @@ def search():
     """
     post_data = request.get_json()
 
-    username = post_data['username']
-    pattern = post_data['pattern']
+    # Some basic data validation of the incoming request payload
+    username = post_data.get("username")
+    pattern = post_data.get("pattern")
+
+    if not username or not isinstance(username, str) :
+        return jsonify({"error": "The 'username' is a required field and must be a string"}), 400
+
+    if not pattern or not isinstance(pattern, str):
+        return jsonify({"error": "The 'pattern' is a required field and must be a string"}), 400
 
     result = {}
     matches = []
