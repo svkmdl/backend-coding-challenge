@@ -36,8 +36,12 @@ def gists_for_user(username: str):
         the above URL for details of the expected structure.
     """
     gists_url = 'https://api.github.com/users/{username}/gists'.format(username=username)
-    response = requests.get(gists_url)
-    return response.json()
+    try:
+        response = requests.get(gists_url)
+        response.raise_for_status()
+        return response.json()
+    except Exception as e:
+        raise Exception(f"API call failed to {gists_url} with error : {str(e)}")
 
 def gist_for_gist_id(gist_id: str):
     """Provides the gist object for a given gist id.
@@ -54,8 +58,12 @@ def gist_for_gist_id(gist_id: str):
         the above URL for details of the expected structure.
     """
     gists_url = 'https://api.github.com/gists/{gist_id}'.format(gist_id=gist_id)
-    response = requests.get(gists_url)
-    return response.json()
+    try:
+        response = requests.get(gists_url)
+        response.raise_for_status()
+        return response.json()
+    except Exception as e:
+        raise Exception(f"API call failed to {gists_url} with error : {str(e)}")
 
 def get_content_from_url(content_url : str):
     """Provides the gist content from the url
@@ -68,8 +76,12 @@ def get_content_from_url(content_url : str):
     Returns:
         The text response from the gist content url
     """
-    response = requests.get(content_url)
-    return response.text
+    try:
+        response = requests.get(content_url)
+        response.raise_for_status()
+        return response.text
+    except Exception as e:
+        raise Exception(f"API call failed to {content_url} with error : {str(e)}")
 
 @app.route("/api/v1/search", methods=['POST'])
 def search():
