@@ -109,31 +109,33 @@ def search():
 
     result = {}
     matches = []
-    gists = gists_for_user(username)
+    try:
+        gists = gists_for_user(username)
+        for gist in gists:
+            # TODO: Fetch each gist and check for the pattern
+            gist_id = gist.get("id")
+            gist_info = gist_for_gist_id(gist_id)
+            for file_name, file_info in gist_info.get("files").items():
+                content = ""
+                match = {}
+                if file_info.get("truncated"):
+                    content = get_content_from_url(file_info.get("raw_url"))
+                else:
+                    content = file_info.get("content")
 
-    for gist in gists:
-        # TODO: Fetch each gist and check for the pattern
-        gist_id = gist.get("id")
-        gist_info = gist_for_gist_id(gist_id)
-        for file_name, file_info in gist_info.get("files").items():
-            content = ""
-            match = {}
-            if file_info.get("truncated"):
-                content = get_content_from_url(file_info.get("raw_url"))
-            else:
-                content = file_info.get("content")
+                if pattern in content:
+                    match['gist_id'] = gist_id
+                    match['file_name'] = file_name
+                    match['gist_content'] = content
+                    matches.append(match)
 
-            if pattern in content:
-                match['gist_id'] = gist_id
-                match['file_name'] = file_name
-                match['gist_content'] = content
-                matches.append(match)
+        result['status'] = 'success'
+        result['username'] = username
+        result['pattern'] = pattern
+        result['matches'] = matches
 
-    result['status'] = 'success'
-    result['username'] = username
-    result['pattern'] = pattern
-    result['matches'] = matches
-
+    except Exception as e:
+        return jsonify({"error": str(e)}), 502
     return jsonify(result)
 
 
