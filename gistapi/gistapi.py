@@ -132,7 +132,18 @@ def search():
         result['status'] = 'success'
         result['username'] = username
         result['pattern'] = pattern
-        result['matches'] = matches
+        # Paginate the matches if 'page' is specified in request
+        page = post_data.get('page')
+        if page is not None:
+            per_page = 10
+            start = (page - 1) * per_page
+            end = start + per_page
+            total_pages = (len(matches) + per_page -1) // per_page
+            matches_in_page = matches[start:end]
+            result['matches'] = matches_in_page
+            result['total_pages'] = total_pages
+        else:
+            result['matches'] = matches
 
     except Exception as e:
         return jsonify({"error": str(e)}), 502
