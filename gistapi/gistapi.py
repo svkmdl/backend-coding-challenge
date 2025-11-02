@@ -138,7 +138,7 @@ def search():
             per_page = 10
             start = (page - 1) * per_page
             end = start + per_page
-            total_pages = (len(matches) + per_page -1) // per_page
+            total_pages = (len(matches) + per_page -1) // per_page #source : https://www.youtube.com/watch?v=U18hO1ngZEQ and suggestion from comment : ceil division most probably better
             matches_in_page = matches[start:end]
             result['matches'] = matches_in_page
             result['total_pages'] = total_pages
