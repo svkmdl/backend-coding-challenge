@@ -1,0 +1,18 @@
+[project]
+name = "gistapi"
+version = "0.1.0"
+description = "Backend coding challenge"
+authors = [
+    {name = "svkmdl",email = "souvikmondal15@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "flask (==2.2.2)",
+    "requests (==2.28.1)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
