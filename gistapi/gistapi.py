@@ -65,21 +65,25 @@ def gist_for_gist_id(gist_id: str):
     except Exception as e:
         raise Exception(f"API call failed to {gists_url} with error : {str(e)}")
 
-def get_content_from_url(content_url : str):
-    """Provides the gist content from the url
+def search_pattern_in_gist_file(content_url : str, pattern : str):
+    """Searches for the pattern in the gist content from the url
 
-    This makes an HTTP GET request to the given URL of a Gist file
-    and returns the content of the file as a string
+    This streams an HTTP GET response to the given URL of a Gist file
+    and checks if the pattern is present
     Args:
         content_url (string) : the url of the gist file content
-
+        pattern (string) : the pattern to search for in the gist file content
     Returns:
-        The text response from the gist content url
+        True if pattern is present in gist file, False otherwise
     """
     try:
-        response = requests.get(content_url)
-        response.raise_for_status()
-        return response.text
+        with requests.get(content_url, stream=True) as response:
+            response.raise_for_status()
+            pattern_utf_8 = pattern.encode("utf-8")
+            for chunk in response.iter_content(chunk_size=1024):
+                if pattern_utf_8 in chunk:
+                    return True
+        return False
     except Exception as e:
         raise Exception(f"API call failed to {content_url} with error : {str(e)}")
 
@@ -112,22 +116,24 @@ def search():
     try:
         gists = gists_for_user(username)
         for gist in gists:
-            # TODO: Fetch each gist and check for the pattern
             gist_id = gist.get("id")
             gist_info = gist_for_gist_id(gist_id)
             for file_name, file_info in gist_info.get("files").items():
-                content = ""
                 match = {}
                 if file_info.get("truncated"):
-                    content = get_content_from_url(file_info.get("raw_url"))
+                    if search_pattern_in_gist_file(content_url = file_info.get("raw_url"), pattern = pattern):
+                        match['gist_id'] = gist_id
+                        match['file_name'] = file_name
+                        match['gist_content'] = 'Gist truncated - file too large'
+                        matches.append(match)
+
                 else:
                     content = file_info.get("content")
-
-                if pattern in content:
-                    match['gist_id'] = gist_id
-                    match['file_name'] = file_name
-                    match['gist_content'] = content
-                    matches.append(match)
+                    if pattern in content:
+                        match['gist_id'] = gist_id
+                        match['file_name'] = file_name
+                        match['gist_content'] = content
+                        matches.append(match)
 
         result['status'] = 'success'
         result['username'] = username
