@@ -1,11 +1,11 @@
 """
 Exposes a simple HTTP API to search a users Gists via a regular expression.
 
-Github provides the Gist service as a pastebin analog for sharing code and
-other develpment artifacts.  See http://gist.github.com for details.  This
+GitHub provides the Gist service as a pastebin analog for sharing code and
+other development artifacts.  See http://gist.github.com for details.  This
 module implements a Flask server exposing two endpoints: a simple ping
 endpoint to verify the server is up and responding and a search endpoint
-providing a search across all public Gists for a given Github account.
+providing a search across all public Gists for a given GitHub account.
 """
 
 import requests
@@ -24,7 +24,7 @@ def ping():
 def gists_for_user(username: str):
     """Provides the list of gist metadata for a given user.
 
-    This abstracts the /users/:username/gist endpoint from the Github API.
+    This abstracts the /users/:username/gist endpoint from the GitHub API.
     See https://developer.github.com/v3/gists/#list-a-users-gists for
     more information.
 
@@ -32,7 +32,7 @@ def gists_for_user(username: str):
         username (string): the user to query gists for
 
     Returns:
-        The dict parsed from the json response from the Github API.  See
+        The dict parsed from the json response from the GitHub API.  See
         the above URL for details of the expected structure.
     """
     gists_url = 'https://api.github.com/users/{username}/gists'.format(username=username)
@@ -46,7 +46,7 @@ def gists_for_user(username: str):
 def gist_for_gist_id(gist_id: str):
     """Provides the gist object for a given gist id.
 
-    This abstracts the /gists/:gist_id endpoint from the Github API.
+    This abstracts the /gists/:gist_id endpoint from the GitHub API.
     See https://docs.github.com/en/rest/gists/gists?apiVersion=2022-11-28#get-a-gist for
     more information
 
@@ -54,7 +54,7 @@ def gist_for_gist_id(gist_id: str):
         gist_id (string): the gist ID to query the specific gist for
 
     Returns:
-        The dict parsed from the json response from the Github API.  See
+        The dict parsed from the json response from the GitHub API.  See
         the above URL for details of the expected structure.
     """
     gists_url = 'https://api.github.com/gists/{gist_id}'.format(gist_id=gist_id)

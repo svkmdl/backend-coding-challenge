@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import patch
-from gistapi.gistapi import gists_for_user, gist_for_gist_id, get_content_from_url
+from gistapi.gistapi import gists_for_user, gist_for_gist_id, search_pattern_in_gist_file
 
 # Unit tests (used ref : https://medium.com/@moraneus/the-art-of-mocking-in-python-a-comprehensive-guide-8b619529458f)
 class TestUtils(unittest.TestCase):
@@ -27,12 +27,12 @@ class TestUtils(unittest.TestCase):
         mock_get.assert_called_once_with(expected_url)
 
     @patch('gistapi.gistapi.requests.get')
-    def test_get_content_from_url(self, mock_get: patch) -> None :
-        mock_response = mock_get.return_value
-        mock_response.text = 'import requests'
-        expected_url = 'https://gist.githubusercontent.com/justdionysus/c8693981025287ea858d2ca5a93ec103/raw/a1352c102b8d47e580cc773e56af9968f7fca03a/bflt.py'
-        actual_data = get_content_from_url(expected_url)
-        self.assertEqual(actual_data, 'import requests')
-        mock_get.assert_called_once_with(expected_url)
+    def test_search_pattern_in_gist_file(self, mock_get: patch) -> None :
+        mock_response = mock_get.return_value.__enter__.return_value  # actual object used as 'response' inside the 'with' block
+        mock_response.iter_content.return_value = ['ABC KOLKATA XYZ'.encode("utf-8")]
+        expected_url = 'https://gist.githubusercontent.com/maneetgoyal/38229f221e54b0864437ff00ccea39aa/raw/238926e17a78cacee6c643313bf05c71b850d431/indian-districts.json'
+        actual_data = search_pattern_in_gist_file( expected_url, 'KOLKATA')
+        self.assertTrue(actual_data)
+        mock_get.assert_called_once_with(expected_url, stream = True)
 if __name__ == '__main__':
     unittest.main()
