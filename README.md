@@ -53,7 +53,18 @@ Install dependencies
 pip3 install -e .
 ```
 
-Runs tests
+Code analysis using Qodana
+
+1. Install Qodana CLI (make sure user has permissions to move into `/usr/local/bin`)
+```bash
+curl -fsSL https://jb.gg/qodana-cli/install | sudo bash
+```
+2. Scan the code using Qodana
+```bash
+qodana scan --config qodana.yaml --image jetbrains/qodana-python-community:2025.2
+```
+
+Run tests
 ```bash
 python3 tests/test_gistapi.py
 ```
