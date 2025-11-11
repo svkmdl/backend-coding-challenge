@@ -1,0 +1,5 @@
+- Can we use a database? What for? SQL or NoSQL?
+  - Yes we may use a database to store all fetched gist files and content, so that for future queries for the same username, one can first try a look up in the database. If the username is not present, then an API call has to be made.
+  - I would use a NoSQL database, like Apache Solr, for its search capabilities. This would help us search for usernames and then the patterns in the gist documents really fast. I have previously wrote a solr query in python [here](https://github.com/msouvikrepo/medicalonto/blob/3fcfcd2e1657b6687c5bdaadffc24a0e95696e86/extract_bioMed_entities.py#L17).
+
+- We may use a CDN service like Cloudflare to be the first step for all incoming traffic. I do not know this topic in detail, other than the names of some managed services.
