@@ -1,5 +1,8 @@
 - Can we use a database? What for? SQL or NoSQL?
-  - Yes we may use a database to store all fetched gist files and content, so that for future queries for the same username, one can first try a look up in the database. If the username is not present, then an API call has to be made.
-  - I would use a NoSQL database, like Apache Solr, for its search capabilities. This would help us search for usernames and then the patterns in the gist documents really fast. I have previously wrote a solr query in python [here](https://github.com/msouvikrepo/medicalonto/blob/3fcfcd2e1657b6687c5bdaadffc24a0e95696e86/extract_bioMed_entities.py#L17).
+  - Yes we may use a database to store all fetched gist files and content, so that for future queries for the same username, one can first try a lookup in the database. If the username is not present, then an API call has to be made.
+  - I would use a NoSQL database, like Apache Solr, for its search capabilities. This would help us search for usernames and then the patterns in the gist documents really fast. I have previously wrote a solr query and processed the output in python [here](https://github.com/msouvikrepo/medicalonto/blob/3fcfcd2e1657b6687c5bdaadffc24a0e95696e86/extract_bioMed_entities.py#L17).
 
 - We may use a CDN service like Cloudflare to be the first step for all incoming traffic. I do not know this topic in detail, other than the names of some managed services.
+- We can simply upload our docker image to a registry, from where we are able to pull, build container and run on some cloud platform. Any necessary configurations, like access & role policies will apply. This can be done with IaC tools like Terraform or Pulumi (I am interested to learn them)
+- We can possibly use a monitoring tool like Sentry for the application itself. For monitoring the server, we may use a monitoring tool from the cloud service provider itself.
+- I would like to improve two things next - implement proper regex for pattern matching and implement a better pagination 
