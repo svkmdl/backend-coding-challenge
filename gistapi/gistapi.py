@@ -138,18 +138,18 @@ def search():
         result['status'] = 'success'
         result['username'] = username
         result['pattern'] = pattern
-        # Paginate the matches if 'page' is specified in request
+        # Paginate the matches
+        per_page = 10
+        result['total_pages'] = len(matches) // per_page + 1
         page = post_data.get('page')
         if page is not None:
-            per_page = 10
             start = (page - 1) * per_page
             end = start + per_page
-            total_pages = (len(matches) + per_page -1) // per_page #source : https://www.youtube.com/watch?v=U18hO1ngZEQ and suggestion from comment : ceil division most probably better
-            matches_in_page = matches[start:end]
-            result['matches'] = matches_in_page
-            result['total_pages'] = total_pages
+            result['matches'] = matches[start:end]
+            result['page'] = page
         else:
-            result['matches'] = matches
+            result['matches'] = matches[:per_page]
+            result['page'] = 1
 
     except Exception as e:
         return jsonify({"error": str(e)}), 502
