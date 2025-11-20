@@ -10,7 +10,7 @@ providing a search across all public Gists for a given GitHub account.
 
 import requests
 from flask import Flask, jsonify, request
-
+import re
 
 app = Flask(__name__)
 
@@ -79,9 +79,9 @@ def search_pattern_in_gist_file(content_url : str, pattern : str):
     try:
         with requests.get(content_url, stream=True) as response:
             response.raise_for_status()
-            pattern_utf_8 = pattern.encode("utf-8")
-            for chunk in response.iter_content(chunk_size=1024):
-                if pattern_utf_8 in chunk:
+            pattern_regex = re.compile(pattern.encode("utf-8")) # pattern -> bytes -> regex object
+            for chunk in response.iter_content(chunk_size=1024): # need to implement buffer : what if pattern is split between two chunks
+                if re.search(pattern_regex, chunk):
                     return True
         return False
     except Exception as e:
@@ -129,7 +129,7 @@ def search():
 
                 else:
                     content = file_info.get("content")
-                    if pattern in content:
+                    if re.search(pattern, content):
                         match['gist_id'] = gist_id
                         match['file_name'] = file_name
                         match['gist_content'] = content
