@@ -79,10 +79,15 @@ def search_pattern_in_gist_file(content_url : str, pattern : str):
     try:
         with requests.get(content_url, stream=True) as response:
             response.raise_for_status()
-            pattern_regex = re.compile(pattern.encode("utf-8")) # pattern -> bytes -> regex object
-            for chunk in response.iter_content(chunk_size=1024): # need to implement buffer : what if pattern is split between two chunks
-                if re.search(pattern_regex, chunk):
+            pattern_bytes = pattern.encode("utf-8")
+            pattern_regex = re.compile(pattern_bytes) # pattern bytes -> regex object
+            buffer = b""
+            pattern_len = len(pattern_bytes)
+            for chunk in response.iter_content(chunk_size=1024):
+                chunk_with_buffer = buffer + chunk
+                if re.search(pattern_regex, chunk_with_buffer):
                     return True
+                buffer = chunk_with_buffer[-pattern_len:]
         return False
     except Exception as e:
         raise Exception(f"API call failed to {content_url} with error : {str(e)}")
