@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import patch
-from gistapi.gistapi import gists_for_user, gist_for_gist_id, search_pattern_in_gist_file
+from gistapi.gistapi import gists_for_user, gist_for_gist_id, search_pattern_in_gist_file, app
 
 # Unit tests (used ref : https://medium.com/@moraneus/the-art-of-mocking-in-python-a-comprehensive-guide-8b619529458f)
 class TestUtils(unittest.TestCase):
@@ -34,5 +34,17 @@ class TestUtils(unittest.TestCase):
         actual_data = search_pattern_in_gist_file( expected_url, 'KOLKATA')
         self.assertTrue(actual_data)
         mock_get.assert_called_once_with(expected_url, stream = True)
+
+# Integration tests (used refs : https://flask.palletsprojects.com/en/stable/testing/ and https://codethechange.stanford.edu/guides/guide_flask_unit_testing.html)
+class TestSearchEndpoint(unittest.TestCase):
+    def setUp(self):
+        app.config.update(TESTING=True)
+        self.client = app.test_client()
+
+    @patch("gistapi.gistapi.gists_for_user", return_value={})
+    @patch("gistapi.gistapi.gist_for_gist_id", return_value={})
+    @patch("gistapi.gistapi.search_pattern_in_gist_file", return_value=True)
+    def test(self):
+        pass
 if __name__ == '__main__':
     unittest.main()
