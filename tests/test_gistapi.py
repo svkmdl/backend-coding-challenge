@@ -41,10 +41,17 @@ class TestSearchEndpoint(unittest.TestCase):
         app.config.update(TESTING=True)
         self.client = app.test_client()
 
-    @patch("gistapi.gistapi.gists_for_user", return_value={})
-    @patch("gistapi.gistapi.gist_for_gist_id", return_value={})
+    @patch("gistapi.gistapi.gists_for_user", return_value=[{"id": "123"}])
+    @patch("gistapi.gistapi.gist_for_gist_id", return_value={"files":{"keybase.md":{"filename":"keybase.md","type":"text/markdown","language":"Markdown","raw_url":"url","size":2189,"truncated":True,"content":"qwerty","encoding":"utf-8"}}})
     @patch("gistapi.gistapi.search_pattern_in_gist_file", return_value=True)
-    def test(self):
-        pass
+    def test_search_calls_helpers_and_returns_200_with_matches(self, mock_search_pattern_in_gist_file, mock_gist_for_gist_id, mock_gists_for_user):
+        payload = {"username" : "justdionysus", "pattern" : "import requests"}
+        response = self.client.post('/api/v1/search', json=payload)
+        self.assertEqual(response.status_code, 200)
+        data = response.get_json()
+        self.assertIn("matches", data)
+        mock_gists_for_user.assert_called_once()
+        mock_gist_for_gist_id.assert_called_once()
+        mock_search_pattern_in_gist_file.assert_called_once()
 if __name__ == '__main__':
     unittest.main()
