@@ -20,7 +20,7 @@ cd backend-coding-challenge
 Run as a flask app:
 ```bash
 pip3 install -e .
-python3 gistapi/gistapi.py
+python3 -m gistapi.gistapi
 ```
 
 Build and run the docker container:
