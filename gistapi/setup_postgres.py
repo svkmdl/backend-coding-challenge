@@ -22,7 +22,7 @@ with conn.cursor() as curs:
 
         create_gists_table = """
         CREATE TABLE IF NOT EXISTS gists (
-        id UUID PRIMARY KEY,
+        id TEXT PRIMARY KEY,
         user_id INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE,
         gist_url TEXT NOT NULL,
         content TEXT

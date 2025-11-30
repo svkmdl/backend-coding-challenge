@@ -2,3 +2,4 @@
 .idea/
 __pycache__/
 gistapi/workbook.py
+gistapi/.DS_Store
