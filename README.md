@@ -68,3 +68,21 @@ Run tests
 ```bash
 python3 tests/test_gistapi.py
 ```
+
+Setup Postgres (tested on version`14.20`) [postgres installation guide](https://wiki.postgresql.org/wiki/Homebrew)
+
+1. Log into the Postgres CLI
+```bash
+psql postgres
+```
+
+2. (Using Postgres CLI) Create Database
+```bash
+CREATE DATABASE gitgists;
+```
+
+3. (Back to terminal again) Create Tables and Populate them
+```bash
+python3 gistapi/setup_postgres.py
+python3 gistapi/populate_tables.py
+```
