@@ -14,7 +14,7 @@ with conn.cursor() as curs:
         create_users_table = """
         CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY,
-        login TEXT NOT NULL
+        user_name TEXT NOT NULL
         );
         """
         curs.execute(create_users_table)
