@@ -4,4 +4,4 @@ WORKDIR /usr/src/app
 COPY . .
 RUN pip3 install --no-cache-dir -e .
 EXPOSE 9876
-CMD ["python3", "gistapi/gistapi.py"]
+CMD ["python3", "-m", "gistapi.gistapi"]
