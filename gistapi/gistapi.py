@@ -10,7 +10,7 @@ providing a search across all public Gists for a given GitHub account.
 
 from flask import Flask, jsonify, request
 import re
-from .helpers import gists_for_user, gist_for_gist_id, search_pattern_in_gist_file
+from .helpers import gists_for_user, gist_for_gist_id, search_pattern_in_gist_file, user_in_db
 
 app = Flask(__name__)
 
@@ -47,26 +47,32 @@ def search():
     result = {}
     matches = []
     try:
-        gists = gists_for_user(username)
-        for gist in gists:
-            gist_id = gist.get("id")
-            gist_info = gist_for_gist_id(gist_id)
-            for file_name, file_info in gist_info.get("files").items():
-                match = {}
-                if file_info.get("truncated"):
-                    if search_pattern_in_gist_file(content_url = file_info.get("raw_url"), pattern = pattern):
-                        match['gist_id'] = gist_id
-                        match['file_name'] = file_name
-                        match['gist_content'] = 'Gist truncated - file too large'
-                        matches.append(match)
 
-                else:
-                    content = file_info.get("content")
-                    if re.search(pattern, content):
-                        match['gist_id'] = gist_id
-                        match['file_name'] = file_name
-                        match['gist_content'] = content
-                        matches.append(match)
+        # try DB lookup first
+        if user_in_db(username):
+            # todo : get user_id for username from users in db -> look for (pattern?) in gists for user_id -> compose matches array
+            raise Exception("DB route still under construction...")
+        else :
+            gists = gists_for_user(username)
+            for gist in gists:
+                gist_id = gist.get("id")
+                gist_info = gist_for_gist_id(gist_id)
+                for file_name, file_info in gist_info.get("files").items():
+                    match = {}
+                    if file_info.get("truncated"):
+                        if search_pattern_in_gist_file(content_url = file_info.get("raw_url"), pattern = pattern):
+                            match['gist_id'] = gist_id
+                            match['file_name'] = file_name
+                            match['gist_content'] = 'Gist truncated - file too large'
+                            matches.append(match)
+
+                    else:
+                        content = file_info.get("content")
+                        if re.search(pattern, content):
+                            match['gist_id'] = gist_id
+                            match['file_name'] = file_name
+                            match['gist_content'] = content
+                            matches.append(match)
 
         result['status'] = 'success'
         result['username'] = username

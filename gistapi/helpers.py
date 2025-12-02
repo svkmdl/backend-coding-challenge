@@ -1,5 +1,6 @@
 import requests
 import re
+import psycopg2
 
 def gists_for_user(username: str) -> dict:
     """Provides the list of gist metadata for a given user.
@@ -71,3 +72,33 @@ def search_pattern_in_gist_file(content_url : str, pattern : str) -> bool:
         return False
     except Exception as e:
         raise Exception(f"API call failed to {content_url} with error : {str(e)}")
+
+def user_in_db(username : str) -> bool:
+    """Searches for the username in the users table in the database
+
+    This queries the db and checks if the username is present
+    Args:
+        username (string) : the username to search for
+    Returns:
+        True if username is present in database, False otherwise
+    """
+    try:
+        conn = psycopg2.connect("dbname='gitgists' user='souvik' host='localhost' password=''")
+    except:
+        print("I am unable to connect to the database")
+
+    with conn.cursor() as curs:
+
+        try:
+            curs.execute("SELECT EXISTS(SELECT 1 FROM users WHERE user_name=%s)", (username,))
+            (user_exists,) = curs.fetchone()
+
+        except (Exception, psycopg2.DatabaseError) as error:
+            conn.rollback()
+            print(error)
+
+        finally:
+            curs.close()
+            conn.close()
+
+    return user_exists
