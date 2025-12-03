@@ -76,7 +76,7 @@ def search_pattern_in_gist_file(content_url : str, pattern : str) -> bool:
 def user_in_db(username : str) -> bool:
     """Searches for the username in the users table in the database
 
-    This queries the db and checks if the username is present
+    This queries the db table users and checks if the username is present
     Args:
         username (string) : the username to search for
     Returns:
@@ -102,3 +102,64 @@ def user_in_db(username : str) -> bool:
             conn.close()
 
     return user_exists
+
+def userid_for_username_from_db(username : str) -> int:
+    """Searches for the user_name, the user id from the users table in the database
+
+    This queries the db table users and returns the user_id for the given username
+    Args:
+        username (string) : the username to search for
+    Returns:
+        The user_id for the given username
+    """
+    try:
+        conn = psycopg2.connect("dbname='gitgists' user='souvik' host='localhost' password=''")
+    except:
+        print("I am unable to connect to the database")
+
+    with conn.cursor() as curs:
+
+        try:
+            curs.execute("SELECT id FROM users WHERE user_name=%s", (username,))
+            (user_id, ) = curs.fetchone()
+
+        except (Exception, psycopg2.DatabaseError) as error:
+            conn.rollback()
+            print(error)
+
+        finally:
+            curs.close()
+            conn.close()
+
+    return user_id
+
+def find_matching_gists_for_user_id_and_pattern(user_id: int, pattern: str) -> list:
+    """Searches for the pattern among the gists contents for the given user_id
+
+    This queries the db table gists and returns the list of matched gists for the given pattern
+    Args:
+         user_id (int) : the user id to search for gists
+         pattern (string) : the pattern to search for in the gists content
+    Returns:
+         List of matched gists for the given pattern and user id
+    """
+    try:
+        conn = psycopg2.connect("dbname='gitgists' user='souvik' host='localhost' password=''")
+    except:
+        print("I am unable to connect to the database")
+
+    with conn.cursor() as curs:
+
+        try:
+            curs.execute("SELECT content FROM gists WHERE user_id=%s AND content ~ %s", (user_id, pattern))
+            matched_gists = [gist_content for (gist_content, ) in curs.fetchall()]
+
+        except (Exception, psycopg2.DatabaseError) as error:
+            conn.rollback()
+            print(error)
+
+        finally:
+            curs.close()
+            conn.close()
+
+    return matched_gists

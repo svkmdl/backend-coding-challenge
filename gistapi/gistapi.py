@@ -10,7 +10,8 @@ providing a search across all public Gists for a given GitHub account.
 
 from flask import Flask, jsonify, request
 import re
-from .helpers import gists_for_user, gist_for_gist_id, search_pattern_in_gist_file, user_in_db
+from .helpers import gists_for_user, gist_for_gist_id, search_pattern_in_gist_file, user_in_db, \
+    userid_for_username_from_db, find_matching_gists_for_user_id_and_pattern
 
 app = Flask(__name__)
 
@@ -35,7 +36,7 @@ def search():
     post_data = request.get_json()
 
     # Some basic data validation of the incoming request payload
-    username = post_data.get("username")
+    username = post_data.get("username").strip()
     pattern = post_data.get("pattern")
 
     if not username or not isinstance(username, str) :
@@ -50,8 +51,8 @@ def search():
 
         # try DB lookup first
         if user_in_db(username):
-            # todo : get user_id for username from users in db -> look for (pattern?) in gists for user_id -> compose matches array
-            raise Exception("DB route still under construction...")
+            user_id = userid_for_username_from_db(username)
+            matches = find_matching_gists_for_user_id_and_pattern(user_id, pattern)
         else :
             gists = gists_for_user(username)
             for gist in gists:
