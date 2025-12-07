@@ -10,11 +10,12 @@ providing a search across all public Gists for a given GitHub account.
 
 from flask import Flask, jsonify, request
 import re
-from .helpers import gists_for_user, gist_for_gist_id, search_pattern_in_gist_file, user_in_db, \
-    userid_for_username_from_db, find_matching_gists_for_user_id_and_pattern, Database
+from .helpers import Database, GithubAPIRepository, DBRepository
 
 app = Flask(__name__)
 db = Database("dbname='gitgists' user='souvik' host='localhost' password=''") # will move this later
+github_api_repo = GithubAPIRepository()
+db_repo = DBRepository(db = db)
 
 @app.route("/ping")
 def ping():
@@ -50,18 +51,18 @@ def search():
     try:
 
         # try DB lookup first
-        if user_in_db(db, username):
-            user_id = userid_for_username_from_db(db, username)
-            matches = find_matching_gists_for_user_id_and_pattern(db, user_id, pattern)
+        if db_repo.user_in_db(username):
+            user_id = db_repo.userid_for_username_from_db(username)
+            matches = db_repo.find_matching_gists_for_user_id_and_pattern(user_id, pattern)
         else :
-            gists = gists_for_user(username)
+            gists = github_api_repo.gists_for_user(username)
             for gist in gists:
                 gist_id = gist.get("id")
-                gist_info = gist_for_gist_id(gist_id)
+                gist_info = github_api_repo.gist_for_gist_id(gist_id)
                 for file_name, file_info in gist_info.get("files").items():
                     match = {}
                     if file_info.get("truncated"):
-                        if search_pattern_in_gist_file(content_url = file_info.get("raw_url"), pattern = pattern):
+                        if github_api_repo.search_pattern_in_gist_file(content_url = file_info.get("raw_url"), pattern = pattern):
                             match['gist_id'] = gist_id
                             match['file_name'] = file_name
                             match['gist_content'] = 'Gist truncated - file too large'
