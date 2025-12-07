@@ -11,10 +11,10 @@ providing a search across all public Gists for a given GitHub account.
 from flask import Flask, jsonify, request
 import re
 from .helpers import gists_for_user, gist_for_gist_id, search_pattern_in_gist_file, user_in_db, \
-    userid_for_username_from_db, find_matching_gists_for_user_id_and_pattern
+    userid_for_username_from_db, find_matching_gists_for_user_id_and_pattern, Database
 
 app = Flask(__name__)
-
+db = Database("dbname='gitgists' user='souvik' host='localhost' password=''") # will move this later
 
 @app.route("/ping")
 def ping():
@@ -50,9 +50,9 @@ def search():
     try:
 
         # try DB lookup first
-        if user_in_db(username):
-            user_id = userid_for_username_from_db(username)
-            matches = find_matching_gists_for_user_id_and_pattern(user_id, pattern)
+        if user_in_db(db, username):
+            user_id = userid_for_username_from_db(db, username)
+            matches = find_matching_gists_for_user_id_and_pattern(db, user_id, pattern)
         else :
             gists = gists_for_user(username)
             for gist in gists:
