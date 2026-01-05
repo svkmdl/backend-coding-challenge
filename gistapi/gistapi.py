@@ -13,7 +13,7 @@ import re
 from .helpers import Database, GithubAPIRepository, DBRepository
 
 app = Flask(__name__)
-db = Database("dbname='gitgists' user='souvik' host='localhost' password=''") # will move this later
+db = Database("postgresql+psycopg2://souvik:''@localhost:5432/gitgists") # will move this later
 github_api_repo = GithubAPIRepository()
 db_repo = DBRepository(db = db)
 

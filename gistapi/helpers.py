@@ -1,7 +1,7 @@
 import requests
 import re
-import psycopg2
-from psycopg2 import DatabaseError
+from sqlalchemy import create_engine, text
+from sqlalchemy.exc import SQLAlchemyError
 
 class Database:
     def __init__(self, dsn: str):
@@ -9,50 +9,24 @@ class Database:
             Args:
                 dsn (string): the database connection string
         """
-        self.dsn = dsn
-
-    def fetch_one(self, sql: str, params=None):
-        """ Fetches a single row from the database
-        Args:
-            sql (string): the SQL query,
-            params (tuple / list / dict / None): the SQL query parameters
-        Returns:
-            the row from the database query
-        """
-        conn = psycopg2.connect(self.dsn)
-        try:
-            with conn.cursor() as curs:
-                curs.execute(sql, params)
-                rows = curs.fetchone()
-
-        except DatabaseError as error:
-            print("Database error:", error)
-
-        finally:
-            if conn is not None:
-                conn.close()
-        return rows
+        self.engine = create_engine(dsn)
 
     def fetch_all(self, sql: str, params=None):
-        """ Fetches a single row from the database
+        """ Runs a query and fetches query results from the database
         Args:
             sql (string): the SQL query,
-            params (tuple / list / dict / None): the SQL query parameters
+            params (dict / None): the SQL query parameters
         Returns:
-            the rows from the database query
+            the row(s) from the database query
         """
-        conn = psycopg2.connect(self.dsn)
         try:
-            with conn.cursor() as curs:
-                curs.execute(sql, params)
-                rows = curs.fetchall()
+            with self.engine.connect() as conn:
+                result = conn.execute(text(sql), params)
+                rows = result.all()
 
-        except DatabaseError as error:
+        except SQLAlchemyError as error:
             print("Database error:", error)
 
-        finally:
-            if conn is not None:
-                conn.close()
         return rows
 
 class GithubAPIRepository:
@@ -145,10 +119,10 @@ class DBRepository:
         Returns:
             True if username is present in database, False otherwise
         """
-        (user_exists,) = self.db.fetch_one("SELECT EXISTS(SELECT 1 FROM users WHERE user_name=%s)", (username,))
+        (user_exists,) = self.db.fetch_all("SELECT EXISTS(SELECT 1 FROM users WHERE user_name= :username)", {"username": username })[0]
         return user_exists
 
-    def userid_for_username_from_db(self, username : str) -> int:
+    def userid_for_username_from_db(self, username : str) :
         """Searches for the user_name, the user id from the users table in the database
 
         This queries the db table users and returns the user_id for the given username
@@ -158,8 +132,11 @@ class DBRepository:
         Returns:
             The user_id for the given username
         """
-        (user_id,) = self.db.fetch_one("SELECT id FROM users WHERE user_name=%s", (username,))
-        return user_id
+        user_ids = self.db.fetch_all("SELECT id FROM users WHERE user_name= :username", {"username": username })
+        if len(user_ids) > 0:
+            return user_ids[0][0]
+        else:
+            return None
 
     def find_matching_gists_for_user_id_and_pattern(self, user_id: int, pattern: str) -> list:
         """Searches for the pattern among the gists contents for the given user_id
@@ -172,4 +149,5 @@ class DBRepository:
         Returns:
             List of matched gists for the given pattern and user id
         """
-        return [gist_content for (gist_content,) in self.db.fetch_all("SELECT content FROM gists WHERE user_id=%s AND content ~ %s", (user_id, pattern))]
+        contents = [gist_content for (gist_content,) in self.db.fetch_all("SELECT content FROM gists WHERE user_id = :user_id AND content ~ :content", {"user_id":user_id, "content":pattern})]
+        return contents
